@@ -12,171 +12,165 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.doi_tien_app.R
 import java.text.DecimalFormat
-import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
-    // UI components
-    private lateinit var fromAmountEditText: EditText
-    private lateinit var toAmountEditText: EditText
-    private lateinit var fromCurrencySpinner: Spinner
-    private lateinit var toCurrencySpinner: Spinner
-    private lateinit var fromCurrencySymbolTextView: TextView
-    private lateinit var toCurrencySymbolTextView: TextView
-    private lateinit var exchangeRateTextView: TextView
 
-    // Currency data
-    private val currencies = listOf(
-        Currency("USD", "United States - Dollar", "$", 1.0),
-        Currency("VND", "Vietnam - Dong", "₫", 23185.0),
-        Currency("EUR", "European Union - Euro", "€", 0.92),
-        Currency("GBP", "United Kingdom - Pound", "£", 0.79),
-        Currency("JPY", "Japan - Yen", "¥", 151.67)
+    private lateinit var editTextFromAmount: EditText// lateinit biến được khai báo sẽ được khởi tạo sau
+    private lateinit var editTextToAmount: EditText
+    private lateinit var spinnerFromCurrency: Spinner
+    private lateinit var spinnerToCurrency: Spinner
+    private lateinit var textViewExchangeRate: TextView
+    private lateinit var textViewFromSymbol: TextView
+    private lateinit var textViewToSymbol: TextView
+
+    // Danh sách các đồng tiền
+    private val currencies = arrayOf("United States - Dollar", "Vietnam - Dong", "European Union - Euro", "Japan - Yen", "United Kingdom - Pound")
+
+    // Danh sách ký hiệu tiền tệ
+    private val currencySymbols = mapOf(
+        "United States - Dollar" to "$",
+        "Vietnam - Dong" to "₫",
+        "European Union - Euro" to "€",
+        "Japan - Yen" to "¥",
+        "United Kingdom - Pound" to "£"
     )
 
-    // Flags to prevent infinite loops when updating text fields
-    private var isFromAmountChanging = false
-    private var isToAmountChanging = false
+    // Tỷ giá cố định so với USD
+    private val exchangeRates = mapOf(
+        "United States - Dollar" to 1.0,
+        "Vietnam - Dong" to 23185.0,
+        "European Union - Euro" to 0.91,
+        "Japan - Yen" to 108.85,
+        "United Kingdom - Pound" to 0.77
+    )
+    // Danh sách mã tiền tệ viết tắt
+    private val currencyCodes = mapOf(
+        "United States - Dollar" to "USD",
+        "Vietnam - Dong" to "VND",
+        "European Union - Euro" to "EUR",
+        "Japan - Yen" to "JPY",
+        "United Kingdom - Pound" to "GBP"
+    )
+
+    private var isUpdating = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize UI components
-        fromAmountEditText = findViewById(R.id.fromAmountEditText)
-        toAmountEditText = findViewById(R.id.toAmountEditText)
-        fromCurrencySpinner = findViewById(R.id.fromCurrencySpinner)
-        toCurrencySpinner = findViewById(R.id.toCurrencySpinner)
-        fromCurrencySymbolTextView = findViewById(R.id.fromCurrencySymbolTextView)
-        toCurrencySymbolTextView = findViewById(R.id.toCurrencySymbolTextView)
-        exchangeRateTextView = findViewById(R.id.exchangeRateTextView)
+        editTextFromAmount = findViewById(R.id.editTextFromAmount)
+        editTextToAmount = findViewById(R.id.editTextToAmount)
+        spinnerFromCurrency = findViewById(R.id.spinnerFromCurrency)
+        spinnerToCurrency = findViewById(R.id.spinnerToCurrency)
+        textViewExchangeRate = findViewById(R.id.textViewExchangeRate)
+        textViewFromSymbol = findViewById(R.id.textViewFromSymbol)
+        textViewToSymbol = findViewById(R.id.textViewToSymbol)
 
-        // Setup currency spinners
-        setupSpinners()
-
-        // Setup text change listeners
-        setupTextChangeListeners()
-
-        // Set initial values
-        fromCurrencySymbolTextView.text = currencies[0].symbol
-        toCurrencySymbolTextView.text = currencies[1].symbol
-        updateExchangeRateText()
-    }
-
-    private fun setupSpinners() {
-        // Create adapter for currency spinners
-        val currencyNames = currencies.map { it.name }.toTypedArray()
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, currencyNames)
+        // Thiết lập adapter cho các spinner
+        val adapter = ArrayAdapter(this,
+            android.R.layout.simple_spinner_item, currencies)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-        // Set adapters
-        fromCurrencySpinner.adapter = adapter
-        toCurrencySpinner.adapter = adapter
+        spinnerFromCurrency.adapter = adapter
+        spinnerToCurrency.adapter = adapter
 
-        // Set default selections
-        fromCurrencySpinner.setSelection(0) // USD
-        toCurrencySpinner.setSelection(1) // VND
+        // Thiết lập giá trị mặc định
+        spinnerFromCurrency.setSelection(0) // USD
+        spinnerToCurrency.setSelection(1) // VND
 
-        // Set listeners
-        fromCurrencySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                fromCurrencySymbolTextView.text = currencies[position].symbol
-                updateExchangeRateText()
-                convertCurrency(true)
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-
-        toCurrencySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                toCurrencySymbolTextView.text = currencies[position].symbol
-                updateExchangeRateText()
-                convertCurrency(true)
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-    }
-
-    private fun setupTextChangeListeners() {
-        fromAmountEditText.addTextChangedListener(object : TextWatcher {
+        // Thiết lập sự kiện khi thay đổi giá trị trên EditText
+        editTextFromAmount.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable?) {
-                if (!isFromAmountChanging) {
-                    convertCurrency(true)
+                if (!isUpdating) {
+                    convertCurrency()
                 }
             }
         })
 
-        toAmountEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-            override fun afterTextChanged(s: Editable?) {
-                if (!isToAmountChanging) {
-                    convertCurrency(false)
-                }
+        // Thiết lập sự kiện khi thay đổi đồng tiền nguồn
+        spinnerFromCurrency.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val fromCurrency = currencies[position]
+                textViewFromSymbol.text = currencySymbols[fromCurrency]
+                convertCurrency()
             }
-        })
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // Thiết lập sự kiện khi thay đổi đồng tiền đích
+        spinnerToCurrency.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val toCurrency = currencies[position]
+                textViewToSymbol.text = currencySymbols[toCurrency]
+                convertCurrency()
+            }
+//ok
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
     }
 
-    private fun convertCurrency(fromToTo: Boolean) {
+    // Phương thức chuyển đổi tiền tệ
+    private fun convertCurrency() {
+        isUpdating = true
+
         try {
-            val fromCurrency = currencies[fromCurrencySpinner.selectedItemPosition]
-            val toCurrency = currencies[toCurrencySpinner.selectedItemPosition]
-            val formatter = DecimalFormat("#,##0.00")
-
-            if (fromToTo) {
-                val fromAmountStr = fromAmountEditText.text.toString()
-                if (fromAmountStr.isEmpty()) {
-                    toAmountEditText.setText("")
-                    return
-                }
-
-                val fromAmount = fromAmountStr.toDoubleOrNull() ?: 0.0
-                val toAmount = fromAmount * (toCurrency.rate / fromCurrency.rate)
-
-                isToAmountChanging = true
-                toAmountEditText.setText(formatter.format(toAmount))
-                isToAmountChanging = false
-            } else {
-                val toAmountStr = toAmountEditText.text.toString()
-                if (toAmountStr.isEmpty()) {
-                    fromAmountEditText.setText("")
-                    return
-                }
-
-                val toAmount = toAmountStr.toDoubleOrNull() ?: 0.0
-                val fromAmount = toAmount * (fromCurrency.rate / toCurrency.rate)
-
-                isFromAmountChanging = true
-                fromAmountEditText.setText(formatter.format(fromAmount))
-                isFromAmountChanging = false
+            // Lấy giá trị nhập vào
+            val amountStr = editTextFromAmount.text.toString()
+            if (amountStr.isEmpty()) {
+                editTextToAmount.setText("0")
+                updateExchangeRateInfo()
+                isUpdating = false
+                return
             }
-        } catch (e: Exception) {
-            // Handle conversion errors
+
+            val amount = amountStr.toDouble()
+
+            // Lấy đồng tiền nguồn và đích
+            val fromCurrency = currencies[spinnerFromCurrency.selectedItemPosition]
+            val toCurrency = currencies[spinnerToCurrency.selectedItemPosition]
+
+            // Tính toán
+            val fromRate = exchangeRates[fromCurrency] ?: 1.0
+            val toRate = exchangeRates[toCurrency] ?: 1.0
+
+            // Chuyển đổi sang USD làm trung gian
+            val amountInUSD = amount / fromRate
+            val result = amountInUSD * toRate
+
+            // Hiển thị kết quả
+            val formatter = DecimalFormat("#,##0.00")
+            editTextToAmount.setText(formatter.format(result))
+
+            // Cập nhật thông tin tỷ giá
+            updateExchangeRateInfo()
+        } catch (e: NumberFormatException) {
+            editTextToAmount.setText("0")
         }
+
+        isUpdating = false
     }
 
-    private fun updateExchangeRateText() {
-        val fromCurrency = currencies[fromCurrencySpinner.selectedItemPosition]
-        val toCurrency = currencies[toCurrencySpinner.selectedItemPosition]
-        val rate = toCurrency.rate / fromCurrency.rate
+    // Cập nhật thông tin tỷ giá hiển thị
+    private fun updateExchangeRateInfo() {
+        val fromCurrency = currencies[spinnerFromCurrency.selectedItemPosition]
+        val toCurrency = currencies[spinnerToCurrency.selectedItemPosition]
+
+        val fromRate = exchangeRates[fromCurrency] ?: 1.0
+        val toRate = exchangeRates[toCurrency] ?: 1.0
+
+        val rate = toRate / fromRate
+
         val formatter = DecimalFormat("#,##0.00")
+        // lấy mã tiền tệ để hiển
+        val fromCode=currencyCodes[fromCurrency]?:fromCurrency
+        val toCode=currencyCodes[toCurrency]?:toCurrency
+        val rateText = "1 $fromCode = ${formatter.format(rate)} $toCode"
 
-        exchangeRateTextView.text = "1 ${fromCurrency.code} = ${formatter.format(rate)} ${toCurrency.code}"
+        textViewExchangeRate.text = rateText
     }
-
-    // Currency data class
-    data class Currency(
-        val code: String,
-        val name: String,
-        val symbol: String,
-        val rate: Double
-    )
 }
-

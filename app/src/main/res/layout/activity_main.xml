@@ -1,106 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
+    android:orientation="vertical"
     android:padding="16dp"
+    android:background="#F5F5F5"
+    android:gravity="center"
     tools:context=".MainActivity">
 
-    <androidx.cardview.widget.CardView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="4dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/textViewFromSymbol"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="$"
+            android:textSize="36sp"
+            android:layout_marginEnd="8dp"/>
+
+        <EditText
+            android:id="@+id/editTextFromAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:inputType="numberDecimal"
+            android:textSize="36sp"
+            android:hint="0"
+            android:background="@null"
+            android:textColor="#000000"/>
+    </LinearLayout>
 
-            <!-- From Currency Section -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="8dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="24dp">
 
-                <TextView
-                    android:id="@+id/fromCurrencySymbolTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="$"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:layout_marginEnd="8dp" />
+        <Spinner
+            android:id="@+id/spinnerFromCurrency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"/>
+    </LinearLayout>
 
-                <EditText
-                    android:id="@+id/fromAmountEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@null"
-                    android:hint="0"
-                    android:inputType="numberDecimal"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+<!--    <View-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="1dp"-->
+<!--        android:background="#CCCCCC"-->
+<!--        android:layout_marginBottom="24dp"/>-->
 
-            <Spinner
-                android:id="@+id/fromCurrencySpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
 
-            <!-- To Currency Section -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="8dp">
+        <TextView
+            android:id="@+id/textViewToSymbol"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="₫"
+            android:textSize="36sp"
+            android:layout_marginEnd="8dp"/>
 
-                <TextView
-                    android:id="@+id/toCurrencySymbolTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="₫"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:layout_marginEnd="8dp" />
+        <EditText
+            android:id="@+id/editTextToAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:textSize="36sp"
+            android:hint="0"
+            android:background="@null"
+            android:enabled="false"
+            android:textColor="#000000"/>
+    </LinearLayout>
 
-                <EditText
-                    android:id="@+id/toAmountEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@null"
-                    android:hint="0"
-                    android:inputType="numberDecimal"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="24dp">
 
-            <Spinner
-                android:id="@+id/toCurrencySpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp" />
+        <Spinner
+            android:id="@+id/spinnerToCurrency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"/>
+    </LinearLayout>
 
-            <!-- Exchange Rate Information -->
-            <TextView
-                android:id="@+id/exchangeRateTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="1 USD = 23,185.00 VND"
-                android:textColor="#757575"
-                android:textSize="14sp" />
+    <TextView
+        android:id="@+id/textViewExchangeRate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:text="1 USD = 23,185.00 VND"
+        android:textSize="16sp" />
 
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
-
+</LinearLayout>
